@@ -12,6 +12,10 @@ export const nextAuthOptions: AuthOptions = {
       clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
     }),
   ],
+  secret: process.env.NEXTAUTH_SECRET || "",
+  session: {
+    strategy: "jwt",
+  },
 };
 const handler = NextAuth(nextAuthOptions);
 export { handler as GET, handler as POST };
