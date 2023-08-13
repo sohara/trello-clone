@@ -10,7 +10,7 @@ export const LoginButton = () => {
       variant="outline"
       onClick={() =>
         signIn("github", {
-          callbackUrl: "http://localhost:3000",
+          callbackUrl: location.origin,
         })
       }
     >
@@ -25,7 +25,7 @@ export const LogoutButton = () => {
       variant="outline"
       onClick={() =>
         signOut({
-          callbackUrl: "http://localhost:3000",
+          callbackUrl: location.origin,
         })
       }
     >
