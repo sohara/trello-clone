@@ -55,7 +55,7 @@ export default async function Boards() {
             <DialogHeader>
               <DialogTitle>Create board</DialogTitle>
               <DialogDescription>
-                Choose a name for your board. Click save when you're done.
+                Choose a name for your board. Click save when you’re done.
               </DialogDescription>
             </DialogHeader>
             <CreateBoardForm createBoard={createBoard} />
