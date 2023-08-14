@@ -48,6 +48,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  boards        Board[]
   
   @@map("users")
 }
@@ -59,4 +60,13 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_tokens")
+}
+
+model Board {
+  id            String    @id @default(cuid())
+  title         String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String    @map("user_id")
+
+  @@map("boards")
 }
