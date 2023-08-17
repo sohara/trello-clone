@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { getCurrentUser } from "../../lib/session";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -13,8 +12,8 @@ import {
 import { CreateBoardForm } from "./_components/create-board-form";
 import { revalidatePath } from "next/cache";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-
-const prisma = new PrismaClient({ log: ["query"] });
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 export default async function Boards() {
   const user = await getCurrentUser();
@@ -38,11 +37,13 @@ export default async function Boards() {
       <h1 className="text-3xl font-semibold">Boards</h1>
       <div className="flex space-x-4">
         {boards.map((board) => (
-          <Card key={board.id} className="w-[250px]">
-            <CardHeader>
-              <CardTitle>{board.title}</CardTitle>
-            </CardHeader>
-          </Card>
+          <Link href={`/boards/${board.id}`} key={board.id}>
+            <Card key={board.id} className="w-[250px]">
+              <CardHeader>
+                <CardTitle>{board.title}</CardTitle>
+              </CardHeader>
+            </Card>
+          </Link>
         ))}
       </div>
 

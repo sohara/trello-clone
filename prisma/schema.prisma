@@ -67,6 +67,28 @@ model Board {
   title         String
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String    @map("user_id")
+  lists         List[]
 
   @@map("boards")
+}
+
+model List {
+  id            String    @id @default(cuid())
+  title         String
+  board         Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId       String    @map("board_id")
+  cards         Card[]
+
+  @@map("lists")
+}
+
+model Card {
+  id            String    @id @default(cuid())
+  list          List      @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listId        String    @map("list_id")
+  title         String
+  description   String?
+  // order         Int       @default(0)
+
+  @@map("cards")  
 }
