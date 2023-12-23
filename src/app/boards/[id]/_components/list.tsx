@@ -34,23 +34,44 @@ export function ListView({
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     const cardId = e.dataTransfer.getData("cardId");
-    const card = document.getElementById(cardId);
+    const droppedCardEl = document.getElementById(cardId);
+    if (!droppedCardEl) {
+      return;
+    }
     const dropPointY = e.clientY;
     console.log({ dropPointY });
-    const cards = document.querySelectorAll(".card");
-    let previousCard: Element | null = null;
+    let previousCard: Element | undefined;
 
-    cards.forEach((cardEl) => {
-      if (cardEl.getBoundingClientRect().y < dropPointY) {
+    const cardEls = cards.map((card) => document.getElementById(card.id));
+    cardEls.forEach((cardEl) => {
+      console.log();
+      if (cardEl && cardEl.getBoundingClientRect().y < dropPointY) {
         previousCard = cardEl;
       }
     });
 
     if (previousCard) {
-      //   previousCard.after(card);
+      previousCard.after(droppedCardEl);
     } else {
-      //   cards[0].before(card);
+      const firstCardEl = cardEls[0];
+      if (firstCardEl) {
+        firstCardEl.before(droppedCardEl);
+      }
     }
+    const orderedCards = cards
+      .slice(0)
+      .map((c) => {
+        const el = document.getElementById(c.id);
+        return { ...c, positionY: el?.getBoundingClientRect()?.y };
+      })
+      .sort((a, b) => (a.positionY ?? 0) - (b.positionY || 0))
+      .map((c) => {
+        const { positionY, ...rest } = c;
+        return rest;
+      });
+    console.log({ orderedCards });
+    setCards(orderedCards);
+
     console.log({ dropped: cardId });
   }
   return (
