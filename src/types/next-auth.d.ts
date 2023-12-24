@@ -2,7 +2,7 @@ import type { User } from "next-auth";
 
 type UserId = string;
 
-declare module "next-auth/jwt" {
+declare module "@auth/core/jwt" {
   interface JWT {
     id: UserId;
   }
