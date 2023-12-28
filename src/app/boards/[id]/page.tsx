@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AddListButton } from "./_components/add-list-button";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { Card as CardModel, List } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -24,11 +25,24 @@ export default async function Boards({ params }: { params: { id: string } }) {
       id: params.id,
     },
     include: {
-      lists: {
-        include: { cards: true },
-      },
+      lists: true,
+      cards: true,
     },
   });
+  if (!board) {
+    return <h1>Board not found</h1>;
+  }
+
+  const listMap = new Map<string, CardModel[]>();
+
+  for (const card of board.cards) {
+    if (!listMap.has(card.listId)) {
+      listMap.set(card.listId, [card]);
+    } else {
+      listMap.get(card.listId)?.push(card);
+    }
+  }
+
   async function createList(title: string) {
     "use server";
     if (!board) return;
@@ -37,9 +51,9 @@ export default async function Boards({ params }: { params: { id: string } }) {
     revalidatePath("/boards/[id]");
   }
 
-  async function createCard(title: string, listId: string) {
+  async function createCard(title: string, listId: string, boardId: string) {
     "use server";
-    await prisma.card.create({ data: { title, listId } });
+    await prisma.card.create({ data: { title, listId, boardId } });
     console.log("created");
     revalidatePath("/boards/[id]");
   }
@@ -49,7 +63,13 @@ export default async function Boards({ params }: { params: { id: string } }) {
       <h1 className="text-3xl font-semibold">{board?.title}</h1>
       <div className="flex space-x-4 items-start" id="lists">
         {board?.lists.map((list) => (
-          <ListView key={list.id} list={list} createCard={createCard} />
+          <ListView
+            key={list.id}
+            list={list}
+            cards={listMap.get(list.id) ?? []}
+            boardId={board.id}
+            createCard={createCard}
+          />
         ))}
         <AddListButton createList={createList} />
       </div>

@@ -5,21 +5,22 @@ import { PlusIcon, Cross1Icon } from "@radix-ui/react-icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { List } from "@prisma/client";
 import { useKeyPress } from "@/lib/use-keypress";
 
 export function AddCardButton({
   createCard,
   listId,
+  boardId,
 }: {
-  createCard: (name: string, list: string) => Promise<void>;
+  createCard: (name: string, listId: string, boardId: string) => Promise<void>;
   listId: string;
+  boardId: string;
 }) {
   const [formShowing, setFormShowing] = useState(false);
   useKeyPress("Escape", () => setFormShowing(false));
 
   function handleSubmit(formData: FormData) {
-    createCard(formData.get("title") as string, listId);
+    createCard(formData.get("title") as string, listId, boardId);
     setFormShowing(false);
   }
 
