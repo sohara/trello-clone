@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "data-migration:add-cards-board-id": "tsx ./prisma/migrations/20231227232415_add_cards_board_id/data-migrations",
+    "data-migration:add-cards-board-id": "tsx ./prisma/migrations/20231228024020_add_cards_board_id/data-migrations.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
