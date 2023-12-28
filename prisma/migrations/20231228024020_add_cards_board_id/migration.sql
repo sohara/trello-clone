@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "cards" ALTER COLUMN "board_id" DROP NOT NULL,
-ALTER COLUMN "board_id" DROP DEFAULT;
