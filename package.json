@@ -2,7 +2,9 @@
   "name": "trello-clone",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
+    "data-migration:add-cards-board-id": "tsx ./prisma/migrations/20231227232415_add_cards_board_id/data-migrations",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -38,5 +40,8 @@
     "tailwindcss": "3.3.3",
     "tailwindcss-animate": "^1.0.6",
     "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0"
   }
 }
