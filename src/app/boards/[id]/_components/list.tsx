@@ -8,18 +8,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
 import { AddCardButton } from "./add-card-button";
 import { Card as CardModel, List } from "@prisma/client";
 
 export function ListView({
   createCard,
   list,
+  boardId,
+  cards,
 }: {
-  createCard: (name: string, list: string) => Promise<void>;
-  list: List & { cards: CardModel[] };
+  createCard: (name: string, list: string, board: string) => Promise<void>;
+  list: List;
+  boardId: string;
+  cards: CardModel[];
 }) {
   const [draggedCard, setDraggedCard] = useState("");
-  const [cards, setCards] = useState(list.cards);
+  const [orderedCards, setOrderedCards] = useState(cards);
   function onDragStart(e: React.DragEvent<HTMLDivElement>) {
     e.dataTransfer.setData("cardId", e.currentTarget.id);
     setDraggedCard(e.currentTarget.id);
@@ -44,7 +49,6 @@ export function ListView({
 
     const cardEls = cards.map((card) => document.getElementById(card.id));
     cardEls.forEach((cardEl) => {
-      console.log();
       if (cardEl && cardEl.getBoundingClientRect().y < dropPointY) {
         previousCard = cardEl;
       }
@@ -70,7 +74,7 @@ export function ListView({
         return rest;
       });
     console.log({ orderedCards });
-    setCards(orderedCards);
+    setOrderedCards(orderedCards);
 
     console.log({ dropped: cardId });
   }
@@ -85,7 +89,7 @@ export function ListView({
         <CardTitle>{list.title}</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        {list.cards.map((card) => (
+        {cards.map((card) => (
           <Card key={card.id} id={card.id} draggable onDragStart={onDragStart}>
             <CardHeader>
               <CardTitle>{card.title}</CardTitle>
@@ -94,7 +98,11 @@ export function ListView({
         ))}
       </CardContent>
       <CardFooter>
-        <AddCardButton listId={list.id} createCard={createCard} />
+        <AddCardButton
+          listId={list.id}
+          boardId={boardId}
+          createCard={createCard}
+        />
       </CardFooter>
     </Card>
   );
