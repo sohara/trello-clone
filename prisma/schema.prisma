@@ -11,18 +11,18 @@ datasource db {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String @map("provider_account_id")
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -49,7 +49,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   boards        Board[]
-  
+
   @@map("users")
 }
 
@@ -63,32 +63,35 @@ model VerificationToken {
 }
 
 model Board {
-  id            String    @id @default(cuid())
-  title         String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String    @map("user_id")
-  lists         List[]
+  id     String @id @default(cuid())
+  title  String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  lists  List[]
+  cards  Card[]
 
   @@map("boards")
 }
 
 model List {
-  id            String    @id @default(cuid())
-  title         String
-  board         Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  boardId       String    @map("board_id")
-  cards         Card[]
+  id      String @id @default(cuid())
+  title   String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId String @map("board_id")
+  cards   Card[]
 
   @@map("lists")
 }
 
 model Card {
-  id            String    @id @default(cuid())
-  list          List      @relation(fields: [listId], references: [id], onDelete: Cascade)
-  listId        String    @map("list_id")
-  title         String
-  description   String?
+  id          String  @id @default(cuid())
+  board       Board?  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId     String? @map("board_id")
+  list        List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+  listId      String  @map("list_id")
+  title       String
+  description String?
   // order         Int       @default(0)
 
-  @@map("cards")  
+  @@map("cards")
 }
