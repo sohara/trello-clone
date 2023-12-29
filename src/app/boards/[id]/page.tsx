@@ -51,9 +51,14 @@ export default async function Boards({ params }: { params: { id: string } }) {
     revalidatePath("/boards/[id]");
   }
 
-  async function createCard(title: string, listId: string, boardId: string) {
+  async function createCard(
+    id: string,
+    title: string,
+    listId: string,
+    boardId: string,
+  ) {
     "use server";
-    await prisma.card.create({ data: { title, listId, boardId } });
+    await prisma.card.create({ data: { id, title, listId, boardId } });
     console.log("created");
     revalidatePath("/boards/[id]");
   }
