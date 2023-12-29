@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { PlusIcon, Cross1Icon } from "@radix-ui/react-icons";
+import { createId } from "@paralleldrive/cuid2";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,12 @@ export function AddCardButton({
   listId,
   boardId,
 }: {
-  createCard: (name: string, listId: string, boardId: string) => Promise<void>;
+  createCard: (
+    id: string,
+    title: string,
+    listId: string,
+    boardId: string,
+  ) => Promise<void>;
   listId: string;
   boardId: string;
 }) {
@@ -20,7 +26,9 @@ export function AddCardButton({
   useKeyPress("Escape", () => setFormShowing(false));
 
   function handleSubmit(formData: FormData) {
-    createCard(formData.get("title") as string, listId, boardId);
+    const id = createId();
+    console.log({ id });
+    createCard(id, formData.get("title") as string, listId, boardId);
     setFormShowing(false);
   }
 
@@ -31,7 +39,7 @@ export function AddCardButton({
           <form action={handleSubmit}>
             <Input placeholder="Enter list title" name="title" autoFocus />
             <div className="flex items-center">
-              <Button>Add list</Button>
+              <Button>Add card</Button>
               <Button variant={"ghost"} onClick={() => setFormShowing(false)}>
                 <Cross1Icon />
               </Button>
