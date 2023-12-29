@@ -18,7 +18,12 @@ export function ListView({
   boardId,
   cards,
 }: {
-  createCard: (name: string, list: string, board: string) => Promise<void>;
+  createCard: (
+    id: string,
+    title: string,
+    listId: string,
+    boardId: string,
+  ) => Promise<void>;
   list: List;
   boardId: string;
   cards: CardModel[];
