@@ -4,17 +4,8 @@ import { AddListButton } from "./_components/add-list-button";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { Card as CardModel, List } from "@prisma/client";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { AddCardButton } from "./_components/add-card-button";
 import { ListView } from "./_components/list";
 
-// TODO: Add closing of form on escape key press
 export default async function Boards({ params }: { params: { id: string } }) {
   const user = await getCurrentUser();
   if (!user) {
