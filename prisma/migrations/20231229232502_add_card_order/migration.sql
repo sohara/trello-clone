@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "cards" ADD COLUMN     "order" DOUBLE PRECISION NOT NULL DEFAULT 1;

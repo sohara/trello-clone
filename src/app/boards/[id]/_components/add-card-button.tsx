@@ -12,15 +12,23 @@ export function AddCardButton({
   createCard,
   listId,
   boardId,
+  nextCardOrder,
 }: {
-  createCard: (
-    id: string,
-    title: string,
-    listId: string,
-    boardId: string,
-  ) => Promise<void>;
+  createCard: ({
+    id,
+    title,
+    listId,
+    boardId,
+  }: {
+    id: string;
+    title: string;
+    listId: string;
+    boardId: string;
+    order: number;
+  }) => Promise<void>;
   listId: string;
   boardId: string;
+  nextCardOrder: number;
 }) {
   const [formShowing, setFormShowing] = useState(false);
   useKeyPress("Escape", () => setFormShowing(false));
@@ -28,7 +36,13 @@ export function AddCardButton({
   function handleSubmit(formData: FormData) {
     const id = createId();
     console.log({ id });
-    createCard(id, formData.get("title") as string, listId, boardId);
+    createCard({
+      id,
+      title: formData.get("title") as string,
+      listId,
+      boardId,
+      order: nextCardOrder,
+    });
     setFormShowing(false);
   }
 
