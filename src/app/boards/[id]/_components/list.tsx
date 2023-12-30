@@ -18,12 +18,18 @@ export function ListView({
   boardId,
   cards,
 }: {
-  createCard: (
-    id: string,
-    title: string,
-    listId: string,
-    boardId: string,
-  ) => Promise<void>;
+  createCard: ({
+    id,
+    title,
+    listId,
+    boardId,
+  }: {
+    id: string;
+    title: string;
+    listId: string;
+    boardId: string;
+    order: number;
+  }) => Promise<void>;
   list: List;
   boardId: string;
   cards: CardModel[];
@@ -40,6 +46,13 @@ export function ListView({
     // console.log({ over: e, draggedCard });
     e.preventDefault();
   }
+  const nextCardOrder =
+    (cards
+      .map((c) => c.order)
+      .sort((a, b) => a - b)
+      .pop() ?? 1) + 1;
+
+  console.log({ nextCardOrder });
 
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -107,6 +120,7 @@ export function ListView({
           listId={list.id}
           boardId={boardId}
           createCard={createCard}
+          nextCardOrder={nextCardOrder}
         />
       </CardFooter>
     </Card>
