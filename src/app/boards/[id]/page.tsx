@@ -62,9 +62,9 @@ export default async function Boards({ params }: { params: { id: string } }) {
   }
 
   return (
-    <main className="px-8 flex flex-col gap-4">
+    <main className="p-4 flex flex-col gap-4 h-full relative">
       <h1 className="text-3xl font-semibold">{board?.title}</h1>
-      <div className="flex space-x-4 items-start" id="lists">
+      <div className="flex space-x-4 items-start min-h-0 h-full" id="lists">
         {board?.lists.map((list) => (
           <ListView
             key={list.id}

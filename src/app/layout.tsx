@@ -20,13 +20,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`min-h-screen bg-background font-sans antialiased ${inter.className}`}
+        className={`h-screen bg-background font-sans antialiased ${inter.className}`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Header />
-          {children}
-        </ThemeProvider>
-        <Analytics />
+        <div className="h-full flex flex-col min-h-0">
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <Header />
+            <div className="flex-grow min-h-0 h-full">{children}</div>
+          </ThemeProvider>
+          <Analytics />
+        </div>
       </body>
     </html>
   );
