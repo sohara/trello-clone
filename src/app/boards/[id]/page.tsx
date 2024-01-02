@@ -1,9 +1,9 @@
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
+import { Card as CardModel } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AddListButton } from "./_components/add-list-button";
-import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
-import { Card as CardModel, List } from "@prisma/client";
 import { ListView } from "./_components/list";
 
 export default async function Boards({ params }: { params: { id: string } }) {

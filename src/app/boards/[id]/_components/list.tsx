@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
-
-import { AddCardButton } from "./add-card-button";
 import { Card, List } from "@prisma/client";
+import { useState } from "react";
+import { AddCardButton } from "./add-card-button";
 
 export function ListView({
   createCard,
@@ -87,7 +86,7 @@ export function ListView({
   return (
     <div
       key={list.id}
-      className="flex flex-col w-[250px] bg-gray-100 rounded-xl shadow-gray-400 shadow-lg h-full overflow-hidden flex-shrink-0"
+      className="flex flex-col w-[250px] bg-gray-100 rounded-xl shadow-gray-400 shadow-lg max-h-full overflow-hidden flex-shrink-0"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
