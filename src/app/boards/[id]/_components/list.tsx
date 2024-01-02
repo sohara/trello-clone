@@ -1,16 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 import { AddCardButton } from "./add-card-button";
-import { Card as CardModel, List } from "@prisma/client";
+import { Card, List } from "@prisma/client";
 
 export function ListView({
   createCard,
@@ -32,15 +25,10 @@ export function ListView({
   }) => Promise<void>;
   list: List;
   boardId: string;
-  cards: CardModel[];
+  cards: Card[];
 }) {
   const [draggedCard, setDraggedCard] = useState("");
   const [orderedCards, setOrderedCards] = useState(cards);
-  function onDragStart(e: React.DragEvent<HTMLDivElement>) {
-    e.dataTransfer.setData("cardId", e.currentTarget.id);
-    setDraggedCard(e.currentTarget.id);
-    console.log({ draggingId: e.currentTarget.id });
-  }
 
   function onDragOver(e: React.DragEvent<HTMLDivElement>) {
     // console.log({ over: e, draggedCard });
@@ -97,32 +85,67 @@ export function ListView({
     console.log({ dropped: cardId });
   }
   return (
-    <Card
+    <div
       key={list.id}
-      className="w-[250px]"
+      className="flex flex-col w-[250px] bg-gray-100 rounded-xl shadow-gray-400 shadow-lg h-full overflow-hidden flex-shrink-0"
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <CardHeader>
-        <CardTitle>{list.title}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
+      <h2 className="py-2 px-4 text-lg font-semibold">{list.title}</h2>
+      <ol className="flex flex-col flex-grow gap-2 py-4 px-2 max-h-full overflow-auto">
         {cards.map((card) => (
-          <Card key={card.id} id={card.id} draggable onDragStart={onDragStart}>
-            <CardHeader>
-              <CardTitle>{card.title}</CardTitle>
-            </CardHeader>
-          </Card>
+          <CardView card={card} key={card.id} />
         ))}
-      </CardContent>
-      <CardFooter>
-        <AddCardButton
-          listId={list.id}
-          boardId={boardId}
-          createCard={createCard}
-          nextCardOrder={nextCardOrder}
-        />
-      </CardFooter>
-    </Card>
+      </ol>
+      <AddCardButton
+        listId={list.id}
+        boardId={boardId}
+        createCard={createCard}
+        nextCardOrder={nextCardOrder}
+      />
+    </div>
+  );
+}
+
+function CardView({ card }: { card: Card }) {
+  const [dragging, setDragging] = useState(false);
+  function onDragStart(e: React.DragEvent<HTMLLIElement>) {
+    e.dataTransfer.setData("cardId", e.currentTarget.id);
+    e.dataTransfer.effectAllowed = "move";
+    setDragging(true);
+    console.log({ draggingId: e.currentTarget.id });
+
+    // Clone the original element so the drag image can be styled
+    // TODO: See if there's a way to do this programmiatically while
+    // setting the native drag image to nothing. Rotation styles don't
+    // seem to work with native elements
+    // const originalNode = e.currentTarget as HTMLLIElement;
+    // const clone = originalNode.cloneNode(true) as HTMLLIElement;
+    // clone.style.width = `${originalNode.clientWidth}px`;
+    // clone.style.height = `${originalNode.clientHeight}px`;
+    // clone.style.transform = "rotate(4deg)";
+    // clone.style.listStyle = "none";
+    // clone.style.cursor = "grabbing";
+    // document.body.appendChild(clone);
+    // e.dataTransfer.setDragImage(clone, 50, 50);
+  }
+
+  function onDragEnd(e: React.DragEvent<HTMLLIElement>) {
+    setDragging(false);
+  }
+
+  return (
+    <li
+      className={`bg-white p-2 rounded-lg shadow-md text-sm ${
+        dragging ? "rotate-2" : ""
+      }`}
+      key={card.id}
+      id={card.id}
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+    >
+      <h3>{card.title}</h3>
+    </li>
   );
 }
