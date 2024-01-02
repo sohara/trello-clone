@@ -136,7 +136,7 @@ function CardView({ card }: { card: Card }) {
 
   return (
     <li
-      className={`bg-white p-2 rounded-lg shadow-md min-h-[36px] text-sm ${
+      className={`bg-white p-2 rounded-lg shadow-md text-sm ${
         dragging ? "rotate-2" : ""
       }`}
       key={card.id}
