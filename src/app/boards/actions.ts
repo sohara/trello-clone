@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
-import { Board } from "@prisma/client";
+import { Board, List } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 export async function createBoard(name: string): Promise<Board | undefined> {
@@ -14,4 +14,12 @@ export async function createBoard(name: string): Promise<Board | undefined> {
   // TODO: This will probably not be needed wiht optimistic UI
   revalidatePath("/boards");
   return board;
+}
+
+export async function updateList(list: List): Promise<List> {
+  const result = await prisma.list.update({
+    where: { id: list.id },
+    data: { ...list },
+  });
+  return result;
 }
