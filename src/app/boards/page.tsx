@@ -19,10 +19,10 @@ export default async function Boards() {
   return (
     <main className="p-4 flex flex-col gap-4 h-full relative">
       <h1 className="text-3xl font-semibold">Boards</h1>
-      <div className="grid  grid-cols-4 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
         {boards.map((board) => (
           <Link href={`/boards/${board.id}`} key={board.id}>
-            <Card key={board.id} className="w-[250px]">
+            <Card key={board.id} className="max-w-[250px]">
               <CardHeader>
                 <CardTitle>{board.title}</CardTitle>
               </CardHeader>
