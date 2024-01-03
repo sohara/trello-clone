@@ -8,7 +8,7 @@ export async function Header() {
   return (
     <header className="sticky top-0 flex items-center justify-between bg-gray-100 border-gray-400 border-b">
       <div className="px-8">
-        <Link href="/" className="text-2xl font-semibold">
+        <Link href={user ? `/boards` : `/`} className="text-2xl font-semibold">
           Trello
         </Link>
       </div>
