@@ -19,16 +19,22 @@ export function EditableText({
           value={value}
           autoFocus
           spellCheck={false}
-          dir="auto"
           rows={1}
           onChange={(e) => {
             setValue(e.target.value);
+          }}
+          onFocus={(e) => {
+            e.target.select();
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
               setEditing(false);
-              onSubmit(value);
+              if (value.length > 0) {
+                onSubmit(value);
+              } else {
+                setValue(text);
+              }
             }
           }}
           onBlur={() => {
