@@ -3,6 +3,8 @@
 import { Card, List } from "@prisma/client";
 import { useState } from "react";
 import { AddCardButton } from "./add-card-button";
+import { EditableText } from "./editable-text";
+import { updateList } from "../../actions";
 
 export function ListView({
   createCard,
@@ -90,7 +92,12 @@ export function ListView({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <h2 className="py-2 px-4 text-lg font-semibold">{list.title}</h2>
+      <EditableText
+        text={list.title}
+        onSubmit={(value) => {
+          updateList({ ...list, title: value });
+        }}
+      />
       <ol className="flex flex-col flex-grow gap-2 py-4 px-2 max-h-full overflow-auto">
         {cards.map((card) => (
           <CardView card={card} key={card.id} />
