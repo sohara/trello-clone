@@ -27,10 +27,10 @@ export function EditableText({
             e.target.select();
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === "Enter" || e.key === "Escape") {
               e.preventDefault();
               setEditing(false);
-              if (value.length > 0) {
+              if (value.length > 0 && value !== text) {
                 onSubmit(value);
               } else {
                 setValue(text);

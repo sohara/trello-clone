@@ -1,56 +1,29 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { PlusIcon, Cross1Icon, Cross2Icon } from "@radix-ui/react-icons";
-import { createId } from "@paralleldrive/cuid2";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useKeyPress } from "@/lib/use-keypress";
 import { Textarea } from "@/components/ui/textarea";
+import { useKeyPress } from "@/lib/use-keypress";
+import { Cross2Icon, PlusIcon } from "@radix-ui/react-icons";
+import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 export function AddCardButton({
-  createCard,
-  listId,
-  boardId,
-  nextCardOrder,
+  onAddCard,
+  onFormShowing,
 }: {
-  createCard: ({
-    id,
-    title,
-    listId,
-    boardId,
-  }: {
-    id: string;
-    title: string;
-    listId: string;
-    boardId: string;
-    order: number;
-  }) => Promise<void>;
-  listId: string;
-  boardId: string;
-  nextCardOrder: number;
+  onAddCard: (text: string) => void;
+  onFormShowing: () => void;
 }) {
   const [formShowing, setFormShowing] = useState(false);
   useKeyPress("Escape", () => setFormShowing(false));
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const submitButtonRef = useRef<HTMLButtonElement>(null);
 
-  function handleSubmit(formData: FormData) {
-    const id = createId();
-    console.log({ id });
-    createCard({
-      id,
-      title: formData.get("title") as string,
-      listId,
-      boardId,
-      order: nextCardOrder,
-    });
+  async function handleSubmit(formData: FormData) {
+    onAddCard(formData.get("title") as string);
     if (textareaRef.current) {
       textareaRef.current.value = "";
     }
-    // setFormShowing(false);
-    //
   }
 
   return (
@@ -67,6 +40,9 @@ export function AddCardButton({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
+                  // TODO: Use form submit here instead of button click?
+                  // With requestSubmit:
+                  // https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations#programmatic-form-submission
                   submitButtonRef.current?.click();
                 }
               }}
@@ -96,7 +72,11 @@ export function AddCardButton({
           variant="ghost"
           className="w-full hover:bg-gray-300 justify-start"
           onClick={() => {
-            setFormShowing(true);
+            // Don't batch updtaes so caller can get curren scrollheight, etc
+            flushSync(() => {
+              setFormShowing(true);
+            });
+            onFormShowing();
           }}
         >
           <PlusIcon className="mr-2" />

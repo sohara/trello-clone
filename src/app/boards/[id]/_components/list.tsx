@@ -1,45 +1,68 @@
 "use client";
 
+import { createId } from "@paralleldrive/cuid2";
 import { Card, List } from "@prisma/client";
-import { useState } from "react";
+import { useOptimistic, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { updateList } from "../../actions";
+import { createCard } from "../actions";
 import { AddCardButton } from "./add-card-button";
 import { EditableText } from "./editable-text";
-import { updateList } from "../../actions";
 
 export function ListView({
-  createCard,
   list,
   boardId,
   cards,
 }: {
-  createCard: ({
-    id,
-    title,
-    listId,
-    boardId,
-  }: {
-    id: string;
-    title: string;
-    listId: string;
-    boardId: string;
-    order: number;
-  }) => Promise<void>;
   list: List;
   boardId: string;
   cards: Card[];
 }) {
   const [draggedCard, setDraggedCard] = useState("");
-  const [orderedCards, setOrderedCards] = useState(cards);
+  const listRef = useRef<HTMLOListElement>(null);
+
+  const [optimisticCards, addOptimisticCard] = useOptimistic<Card[], Card>(
+    cards,
+    (state: Card[], newCard: Card) => [...state, newCard],
+  );
+
+  const sortedOptimisticCards = optimisticCards.sort(
+    (a, b) => a.order - b.order,
+  );
+
+  const nextCardOrder =
+    (sortedOptimisticCards.map((c) => c.order).pop() ?? 1) + 1;
+
+  async function onAddCard(title: string) {
+    const id = createId();
+    console.log({ id });
+    const newCard: Card = {
+      id,
+      description: "",
+      title,
+      listId: list.id,
+      boardId,
+      order: nextCardOrder,
+    };
+    // Need to use `flushSync` so that render happens before getting
+    // current scrollHeight
+    flushSync(() => {
+      addOptimisticCard(newCard);
+    });
+    scrollToBottom();
+    await createCard(newCard);
+  }
+
+  function scrollToBottom() {
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
+  }
 
   function onDragOver(e: React.DragEvent<HTMLDivElement>) {
     // console.log({ over: e, draggedCard });
     e.preventDefault();
   }
-  const nextCardOrder =
-    (cards
-      .map((c) => c.order)
-      .sort((a, b) => a - b)
-      .pop() ?? 1) + 1;
 
   console.log({ nextCardOrder });
 
@@ -81,7 +104,7 @@ export function ListView({
         return rest;
       });
     console.log({ orderedCards });
-    setOrderedCards(orderedCards);
+    // setOrderedCards(orderedCards);
 
     console.log({ dropped: cardId });
   }
@@ -98,17 +121,15 @@ export function ListView({
           updateList({ ...list, title: value });
         }}
       />
-      <ol className="flex flex-col flex-grow gap-2 py-4 px-2 max-h-full overflow-auto">
-        {cards.map((card) => (
+      <ol
+        className="flex flex-col flex-grow gap-2 py-4 px-2 max-h-full overflow-auto"
+        ref={listRef}
+      >
+        {sortedOptimisticCards.map((card) => (
           <CardView card={card} key={card.id} />
         ))}
       </ol>
-      <AddCardButton
-        listId={list.id}
-        boardId={boardId}
-        createCard={createCard}
-        nextCardOrder={nextCardOrder}
-      />
+      <AddCardButton onAddCard={onAddCard} onFormShowing={scrollToBottom} />
     </div>
   );
 }

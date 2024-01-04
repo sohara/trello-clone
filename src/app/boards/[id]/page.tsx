@@ -42,25 +42,6 @@ export default async function Boards({ params }: { params: { id: string } }) {
     revalidatePath("/boards/[id]");
   }
 
-  async function createCard({
-    id,
-    title,
-    listId,
-    boardId,
-    order,
-  }: {
-    id: string;
-    title: string;
-    listId: string;
-    boardId: string;
-    order: number;
-  }) {
-    "use server";
-    await prisma.card.create({ data: { id, title, listId, boardId, order } });
-    console.log("created");
-    revalidatePath("/boards/[id]");
-  }
-
   return (
     <main className="p-4 flex flex-col gap-4 h-full relative">
       <h1 className="text-3xl font-semibold">{board?.title}</h1>
@@ -71,7 +52,6 @@ export default async function Boards({ params }: { params: { id: string } }) {
             list={list}
             cards={listMap.get(list.id) ?? []}
             boardId={board.id}
-            createCard={createCard}
           />
         ))}
         <AddListButton createList={createList} />
