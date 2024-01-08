@@ -2,12 +2,48 @@
 
 import { createId } from "@paralleldrive/cuid2";
 import { Card, List } from "@prisma/client";
-import { useOptimistic, useRef, useState } from "react";
+import { useReducer, useRef, useState, useTransition } from "react";
 import { flushSync } from "react-dom";
 import { updateList } from "../../actions";
-import { createCard } from "../actions";
+import { createCard, deleteCard, updateCard } from "../actions";
 import { AddCardButton } from "./add-card-button";
+import { CardView } from "./card";
 import { EditableText } from "./editable-text";
+
+type OptimisticAdd = {
+  type: "ADD";
+  payload: Card;
+};
+
+type OptimisticUpdate = {
+  type: "UPDATE";
+  payload: { id: string; order: number };
+};
+
+type OptimisticDelete = {
+  type: "DELETE";
+  payload: { id: string };
+};
+
+type Action = OptimisticAdd | OptimisticUpdate | OptimisticDelete;
+
+function reducer(state: Card[], { type, payload }: Action) {
+  switch (type) {
+    case "ADD":
+      return [...state, payload];
+    case "UPDATE":
+      console.log("UPDATING", { state, payload });
+      // const [_, ...rest] = state;
+      return state.map((c) =>
+        c.id === payload.id ? { ...c, order: payload.order } : c,
+      );
+    case "DELETE":
+      return state.filter((c) => c.id !== payload.id);
+    default:
+      console.log("doing default");
+      return state;
+  }
+}
 
 export function ListView({
   list,
@@ -18,24 +54,22 @@ export function ListView({
   boardId: string;
   cards: Card[];
 }) {
-  const [draggedCard, setDraggedCard] = useState("");
   const listRef = useRef<HTMLOListElement>(null);
-
-  const [optimisticCards, addOptimisticCard] = useOptimistic<Card[], Card>(
-    cards,
-    (state: Card[], newCard: Card) => [...state, newCard],
-  );
+  const [_, startTransition] = useTransition();
+  const [currentDragId, setCurrentDragID] = useState("");
+  const [optimisticCards, dispatch] = useReducer(reducer, cards);
+  const [dragPreviewHeight, setDragPreviewHeight] = useState(0);
 
   const sortedOptimisticCards = optimisticCards.sort(
     (a, b) => a.order - b.order,
   );
+  console.log({ sortedOptimisticCards });
 
   const nextCardOrder =
     (sortedOptimisticCards.map((c) => c.order).pop() ?? 1) + 1;
 
   async function onAddCard(title: string) {
     const id = createId();
-    console.log({ id });
     const newCard: Card = {
       id,
       description: "",
@@ -47,10 +81,18 @@ export function ListView({
     // Need to use `flushSync` so that render happens before getting
     // current scrollHeight
     flushSync(() => {
-      addOptimisticCard(newCard);
+      // setOptimisticCards({ action: "ADD", payload: newCard });
+      dispatch({ type: "ADD", payload: newCard });
     });
     scrollToBottom();
     await createCard(newCard);
+  }
+
+  async function onDropCard(id: string, order: number) {
+    startTransition(() => {
+      dispatch({ type: "UPDATE", payload: { id, order } });
+    });
+    await updateCard(id, { order });
   }
 
   function scrollToBottom() {
@@ -64,50 +106,21 @@ export function ListView({
     e.preventDefault();
   }
 
-  console.log({ nextCardOrder });
-
   function onDrop(e: React.DragEvent<HTMLDivElement>) {
-    e.preventDefault();
-    const cardId = e.dataTransfer.getData("cardId");
-    const droppedCardEl = document.getElementById(cardId);
-    if (!droppedCardEl) {
-      return;
-    }
-    const dropPointY = e.clientY;
-    console.log({ dropPointY });
-    let previousCard: Element | undefined;
-
-    const cardEls = cards.map((card) => document.getElementById(card.id));
-    cardEls.forEach((cardEl) => {
-      if (cardEl && cardEl.getBoundingClientRect().y < dropPointY) {
-        previousCard = cardEl;
-      }
-    });
-
-    if (previousCard) {
-      previousCard.after(droppedCardEl);
-    } else {
-      const firstCardEl = cardEls[0];
-      if (firstCardEl) {
-        firstCardEl.before(droppedCardEl);
-      }
-    }
-    const orderedCards = cards
-      .slice(0)
-      .map((c) => {
-        const el = document.getElementById(c.id);
-        return { ...c, positionY: el?.getBoundingClientRect()?.y };
-      })
-      .sort((a, b) => (a.positionY ?? 0) - (b.positionY || 0))
-      .map((c) => {
-        const { positionY, ...rest } = c;
-        return rest;
-      });
-    console.log({ orderedCards });
-    // setOrderedCards(orderedCards);
-
-    console.log({ dropped: cardId });
+    const id = e.dataTransfer.getData("cardId");
+    // TODO: Accept cards from other lists. Also if list already has
+    // elements, figure out based on drop position whether we should prepend ]
+    // or append this card to the list
+    const order = 1;
+    dispatch({ type: "UPDATE", payload: { id, order } });
+    updateCard(id, { order });
   }
+
+  function onDelete(id: string) {
+    dispatch({ type: "DELETE", payload: { id } });
+    deleteCard(id);
+  }
+
   return (
     <div
       key={list.id}
@@ -122,57 +135,27 @@ export function ListView({
         }}
       />
       <ol
-        className="flex flex-col flex-grow gap-2 py-4 px-2 max-h-full overflow-auto"
+        className="flex flex-col flex-grow px-2 max-h-full overflow-auto pb-2"
         ref={listRef}
       >
-        {sortedOptimisticCards.map((card) => (
-          <CardView card={card} key={card.id} />
+        {sortedOptimisticCards.map((card, index, cards) => (
+          <CardView
+            card={card}
+            dragPreviewHeight={dragPreviewHeight}
+            key={card.id}
+            previousOrder={cards[index - 1] ? cards[index - 1].order : 0}
+            nextOrder={
+              cards[index + 1] ? cards[index + 1].order : card.order + 1
+            }
+            onDropCard={onDropCard}
+            currentDragId={currentDragId}
+            setCurrentDragId={setCurrentDragID}
+            setDragPreviewHeight={setDragPreviewHeight}
+            onDelete={onDelete}
+          />
         ))}
       </ol>
       <AddCardButton onAddCard={onAddCard} onFormShowing={scrollToBottom} />
     </div>
-  );
-}
-
-function CardView({ card }: { card: Card }) {
-  const [dragging, setDragging] = useState(false);
-  function onDragStart(e: React.DragEvent<HTMLLIElement>) {
-    e.dataTransfer.setData("cardId", e.currentTarget.id);
-    e.dataTransfer.effectAllowed = "move";
-    setDragging(true);
-    console.log({ draggingId: e.currentTarget.id });
-
-    // Clone the original element so the drag image can be styled
-    // TODO: See if there's a way to do this programmiatically while
-    // setting the native drag image to nothing. Rotation styles don't
-    // seem to work with native elements
-    // const originalNode = e.currentTarget as HTMLLIElement;
-    // const clone = originalNode.cloneNode(true) as HTMLLIElement;
-    // clone.style.width = `${originalNode.clientWidth}px`;
-    // clone.style.height = `${originalNode.clientHeight}px`;
-    // clone.style.transform = "rotate(4deg)";
-    // clone.style.listStyle = "none";
-    // clone.style.cursor = "grabbing";
-    // document.body.appendChild(clone);
-    // e.dataTransfer.setDragImage(clone, 50, 50);
-  }
-
-  function onDragEnd(e: React.DragEvent<HTMLLIElement>) {
-    setDragging(false);
-  }
-
-  return (
-    <li
-      className={`bg-white p-2 rounded-lg shadow-md text-sm ${
-        dragging ? "rotate-2" : ""
-      }`}
-      key={card.id}
-      id={card.id}
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-    >
-      <h3>{card.title}</h3>
-    </li>
   );
 }

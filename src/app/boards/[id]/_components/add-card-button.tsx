@@ -46,6 +46,7 @@ export function AddCardButton({
                   submitButtonRef.current?.click();
                 }
               }}
+              onBlur={() => setFormShowing(false)}
             />
             <div className="flex items-center gap-2">
               <Button
